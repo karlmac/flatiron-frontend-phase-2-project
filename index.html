@@ -7,16 +7,17 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="./style.css">
-
+    
 </head>
 <body>
     
     <h1>Time Card</h1>
     
     <p><i id="lastPunchMsg"></i></p>
+    
     <label for="timePunch">Enter Time: </label>
-    <input type="time" id="timePunch">
-
+    <input type="datetime-local" id="timePunch">
+    
     <!-- <button id="btnClockIn">Clock In</button> -->
     <!-- <button id="btnClockOut">Clock Out</button> -->
     
@@ -24,8 +25,10 @@
     
     <button id="btnShowHistory">Show History</button>
     
-    <div id="divHistory">
-
+    <div>
+        
+        <div id="punchHistory">        
+        </div>
     </div>
     
     <!--     
