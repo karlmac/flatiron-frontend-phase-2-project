@@ -1,15 +1,40 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title></title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="./style.css">
-    </head>
-    <body>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>My Time Card</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    
+    <h1>Time Card</h1>
+    
+    <p><i id="lastPunchMsg">Last clocked in/out at 00:00 AM</i></p>
+    <label for="timePunch">Enter Time: </label>
+    <input type="time" id="timePunch">
+
+    <!-- <button id="btnClockIn">Clock In</button> -->
+    <!-- <button id="btnClockOut">Clock Out</button> -->
+    
+    <button id="btnSubmit">Submit</button>
+    
+    <button id="btnShowHistory">Show History</button>
+    
+    
+    <!--     
+        <label for="clockInTime">Clock In:</label>
+        <input type="time" id="clockInTime">
         
-        <script src="./index.js" async defer></script>
-    </body>
+        <label for="clockOutTime">Clock Out:</label>
+        <input type="time" id="clockOutTime">
+    -->
+    
+    
+    <script src="./index.js" async defer></script>
+    
+    
+</body>
 </html>
