@@ -7,12 +7,13 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="./style.css">
+
 </head>
 <body>
     
     <h1>Time Card</h1>
     
-    <p><i id="lastPunchMsg">Last clocked in/out at 00:00 AM</i></p>
+    <p><i id="lastPunchMsg"></i></p>
     <label for="timePunch">Enter Time: </label>
     <input type="time" id="timePunch">
 
@@ -23,6 +24,9 @@
     
     <button id="btnShowHistory">Show History</button>
     
+    <div id="divHistory">
+
+    </div>
     
     <!--     
         <label for="clockInTime">Clock In:</label>
@@ -33,7 +37,7 @@
     -->
     
     
-    <script src="./index.js" async defer></script>
+    <script src="./index.js" defer></script>
     
     
 </body>
