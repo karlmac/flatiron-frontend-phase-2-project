@@ -1,0 +1,61 @@
+body {
+    margin: 20px;
+    font-family: monospace;
+    font-size: 14px
+  }
+
+  
+  .card {
+    text-align: center;
+    border: grey solid 1px;
+    padding: 1rem;
+    width: 15rem;
+    height: 25rem;
+    display: inline-grid;
+    margin: 1rem 2rem;
+    box-shadow: 3px 4px #e04b52
+  }
+ 
+  
+  button {
+    position: relative;
+    background-color: whitesmoke;
+    border: #e04b52 solid 1px;
+    border-radius: 5px;
+    color: #e04b52;
+    height: 3rem;
+    width: max-content;
+    font-size: 16px;
+    justify-self: center;
+  }
+  
+  button:hover {
+    background-color: #e04b52;
+    border: none;
+    color: whitesmoke;
+    cursor: pointer;;
+  }
+  
+  .container {
+    padding: 1rem;
+    width: stretch;
+    height: auto;
+    display: none;
+    background: #515DA2;
+    opacity: .8;
+  }
+  
+  .submit:hover {
+    background-color: whitesmoke;
+    border: #e04b52 solid 1px;
+    color: #e04b52;
+  }
+  
+  
+  input {
+    border-radius: 5px;
+    height: 2rem;
+    font-size: 18px;
+    margin: 3px;
+  }
+  
