@@ -9,6 +9,7 @@ const defaultURL = 'http://localhost:3000/timeCard';
 let timeCardObj = {};
 
 cBtnShowHistory.textContent = "Show History";
+let showPunchHistoryDisplay = false;
 
 document.addEventListener("DOMContentLoaded", async () => {
     //Get Last Punch info
@@ -22,10 +23,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     
     //Show Punch history
-    cBtnShowHistory.addEventListener("click", async () =>
-    {
-        cBtnShowHistory.textContent = "Hide History";
-        refreshPunchHistory(); });
+    cBtnShowHistory.addEventListener("click", async () => {
+        if (!showPunchHistoryDisplay){
+            refreshPunchHistory();
+            cBtnShowHistory.textContent = "Hide History";
+            cPunchHistory.style.display = "block";
+            showPunchHistoryDisplay = true;
+        } else {
+            cBtnShowHistory.textContent = "Show History";
+            cPunchHistory.style.display = "none";
+            showPunchHistoryDisplay = false;
+        }
+     });
     
 });
 
