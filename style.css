@@ -27,7 +27,7 @@ tr{
 }
 
 
-button {
+.button {
   position: relative;
   background-color: whitesmoke;
   border: #e04b52 solid 1px;
@@ -39,11 +39,15 @@ button {
   justify-self: center;
 }
 
-button:hover {
+.button:hover {
   background-color: #e04b52;
   border: none;
   color: whitesmoke;
-  cursor: pointer;;
+  cursor: pointer;
+}
+
+button:hover {
+  cursor: pointer;
 }
 
 .container {
