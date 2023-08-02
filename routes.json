@@ -1,0 +1,6 @@
+{
+    "/timeCard/days": "/days",
+    "/timeCard/days/:id": "/days/:id",
+    "/timeCard/punches": "/punches",
+    "/timeCard/punches/:id": "/punches/:id"
+  }
