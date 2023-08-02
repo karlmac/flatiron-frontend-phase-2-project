@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     cLastPunchMsg.textContent = `Last clocked ${"#in/out#"} at ${"#00:00 AM#"}`;
     
     //Submit Punch
-    cBtnSubmit.addEventListener("click", () => { 
+    cBtnSubmit.addEventListener("click", async () => { 
         const punchTime = cTimePunch.value;
         console.log(punchTime);
         
@@ -34,16 +34,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             cPunchHistory.style.display = "none";
             showPunchHistoryDisplay = false;
         }
-     });
+    });
     
 });
 
 //Refresh punch history
 async function refreshPunchHistory() {
-
+    
     await fetchRequest(defaultURL);
     cPunchHistory.textContent = "";
-            
+    
     //Convert timeCard Object to Array
     const timeCardArray = Object.keys(timeCardObj).map(element => timeCardObj[element]);// [];
     
@@ -55,7 +55,7 @@ async function refreshPunchHistory() {
         
         const punches = timeCard["punches"];
         const cardId = timeCard["id"];
-
+        
         const rowHeader = tblElement.createTHead();
         //const cell0 = rowHeader.insertCell();
         rowHeader.innerHTML = `<b>${timeCard["day"]}</b>`;
@@ -66,14 +66,8 @@ async function refreshPunchHistory() {
         cell0.innerHTML = `<b>Clock-In</b>`;
         cell00.innerHTML = `<b>Clock-Out</b>`;
         
-        // alert(timeCardArray.keys());
-        // const punchesArray = timeCardArray.values();
-        // punchesArray.forEach(element => {
-        //     console.log(element + " - array");
-        // });
         
         for(i =0; i< punches.length; i++) {
-            //console.log(`Clock-In: ${punches[j]["timeIn"]} - Clock-Out: ${punches[j]["timeOut"]}`);
             const punchId = punches[i]["id"];
             const row1 = tblElement.insertRow();
             const cell1 = row1.insertCell();
@@ -83,55 +77,69 @@ async function refreshPunchHistory() {
             cell2.innerHTML = `${punches[i]["timeOut"] ? punches[i]["timeOut"]: ""}`;
             
             const cBody = {
-                id: punchId
+                "punches": punches[i],
+                "id": punchId
             };
-
+            
             //Add delete punch button
             const btnDeletePunch = document.createElement("button");
             btnDeletePunch.id = `btnDeletePunch_${cardId}_${punchId}`;
             btnDeletePunch.textContent = `Delete`;
             btnDeletePunch.addEventListener("click", () => deletePunch(cardId, cBody,
                 `${cell1.textContent ? cell1.textContent: "\"undefined\""} to ${cell2.textContent? cell2.textContent: "\"undefined\""} on ${rowHeader.textContent}`));                
-            cell3.append(btnDeletePunch);
-        };
-        cPunchHistory.append(tblElement);
+                cell3.append(btnDeletePunch);
+            };
+            cPunchHistory.append(tblElement);
+            
+        });
         
-    });
-    
-    //console.log(timeCardObj);
-}
-
-//Delete Punch
-async function deletePunch(cardId, cBody, punchInfo) {
-    //alert(cardId); alert(cBody);
-    
-    if(confirm(`Are you sure you want to delete the punch from ${punchInfo}?`))
-    {
-        const configSettings = {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(cBody)
-        };
-        
-        await fetchRequest(`${defaultURL}/${cardId}`, configSettings);
-        alert(`Punch deleted`);
+        //console.log(timeCardObj);
     }
-}
-
-
-//Generic Fetch request
-async function fetchRequest(url, configSettings) {
-    await fetch(url, configSettings)
-    .then(response => response.json())
-    .then(data => {
-        //console.log(data);
-        timeCardObj = data;
-    })
-    .catch(err => {
-        console.log(err);
-        alert("Server Error!");
-    });
-    return timeCardObj;
-}
+    
+    //Delete Punch
+    async function deletePunch(cardId, cBody, punchInfo) {
+        
+        console.log("cardId", cardId, "cBody", cBody);
+        
+        if(confirm(`Are you sure you want to delete the punch from ${punchInfo}?`))
+        {
+            const configSettings = {
+                method: 'DELETE',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify(cBody)
+            };
+            
+            const result = await fetchRequest(`${defaultURL}/${cardId}?_embed=punches`, configSettings)
+            //const result = await fetchRequest(`${defaultURL}/${cardId}`, configSettings)
+            if(result.status === 200) {
+                alert(`Punch deleted`)
+            }
+            else {
+                alert(`An error occurred!`)
+                //console.log(result);
+            }
+            
+            refreshPunchHistory();
+        }
+    }
+    
+    
+    //Generic Fetch request
+    async function fetchRequest(url, configSettings) {
+        let result;
+        
+        await fetch(url, configSettings)
+        .then(response => {result = response; return response.json() })
+        .then(data => {
+            timeCardObj = data;
+        })
+        .catch(err => {
+            console.log(err);
+            alert("Server Error!");
+        });
+        return result;
+    }
+    
