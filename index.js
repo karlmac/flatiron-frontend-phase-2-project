@@ -23,18 +23,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         const cTimePunchIn = document.getElementById("timePunchIn");
         const cTimePunchOut = document.getElementById("timePunchOut");
         
+        const punchDay = cDay.value;
         const timeIn = cTimePunchIn.value;
         const timeOut = cTimePunchOut.value;
         
         const cBody = {
-            "day": cDay,
+            "day": punchDay,
             "timeIn" : timeIn,
             "timeOut" : timeOut
         };
         
-        submitPunch(cBody, `${cBody["timeIn"]} to ${cBody["timetimeOutIn"]}`)
-        
         console.log(cBody);
+        
+        submitPunch(cBody, `${cBody["timeIn"]} to ${cBody["timeOut"]}`)
         
     });
     
@@ -98,7 +99,7 @@ async function refreshPunchHistory() {
             cell2.innerHTML = `${punch["timeOut"] ? punch["timeOut"]: ""}`;
             cell1.className = "td";
             cell2.className = "td";
-
+            
             //Add delete punch button
             const btnDeletePunch = document.createElement("button");
             btnDeletePunch.id = `btnDeletePunch_${dayId}_${punchId}`;
@@ -115,10 +116,9 @@ async function refreshPunchHistory() {
 }
 
 //Submit Punch
-async function submitPunch(cBody, punchInfo) {        
-    if(confirm(`Are you sure you want to submit the punch from ${punchInfo}?`)) {
-
-        if(isValidTimeEntry(cBody["day"], cBody["timeIn"], cBody["timeOut"],)) {
+async function submitPunch(cBody, punchInfo) {
+    if(await isValidTimeEntry(cBody["day"], cBody["timeIn"], cBody["timeOut"])) {
+        if(confirm(`Are you sure you want to submit the punch from ${punchInfo}?`)) {        
             const configSettings = {
                 method: 'POST',
                 headers: {
@@ -131,66 +131,14 @@ async function submitPunch(cBody, punchInfo) {
             const result = await fetchRequest(`${defaultURL}/punches`);//, configSettings)
             if(result.status === 200) {
                 alert(`Punch added successfully!`)
+                //refreshPunchHistory();
             }
             else {
                 alert(`An error occurred!`)
                 //console.log(result);
             }
-        }
-        
-        refreshPunchHistory();
+        }        
     }
-}
-//Validate Punch data
-async function isValidTimeEntry(day, timeIn, timeOut) {
-    if(!day) {
-        alert("Please enter a day");
-        return false;
-    }
-    if(!timeIn) {
-        alert("Please enter Clock-In time");
-        return false;
-    }
-    if(!timeOut) {
-        alert("Please enter Clock-Out time");
-        return false;
-    }
-    
-    //Verify Clock-Out time is greater than Clock-In time
-    if(timeOut <= timeIn) {
-        alert("Clock-In time must be older than Clock-Out time");
-        return false;
-    }
-    
-    await fetchRequest(`${defaultURL}/punches`);
-    const punchArray = ObjToArray(timeCardObj);
-    
-    //Check if day exists and add day if it doesn't
-    if(punchArray.find(punch => punch["day"] !== day)) {
-        const cBody = { "day": day }
-        
-        const configSettings = {
-            method: "PUT",
-            header:
-            {
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(cBody)
-        }
-        
-        await fetchRequest(`${defaultURL}/days`, configSettings);
-        
-        return true;
-    }
-    
-    //Check if there's a more recent entry on the same day
-    if(punchArray.filter(punch => punch["day"] === day).find(punch => timeIn <= punch["timeOut"])) {
-        alert("Time entry cannot be older than any existing entries for the same day");
-        return false;
-    }
-    
-    return true;
 }
 
 //Delete Punch
@@ -217,6 +165,77 @@ async function deletePunch(punchId, cBody, punchInfo) {
         
         refreshPunchHistory();
     }
+}
+
+//Validate Punch data
+async function isValidTimeEntry(day, timeIn, timeOut) {
+    if(!day) {
+        alert("Please enter a day");
+        console.log("Invalid day");
+        return false;
+    }
+    if(!timeIn) {
+        alert("Please enter Clock-In time");
+        console.log("Invalid Clock-In time");
+        return false;
+    }
+    if(!timeOut) {
+        alert("Please enter Clock-Out time");
+        console.log("Invalid Clock-Out time");
+        return false;
+    }
+
+    //console.log(day, timeIn, timeOut);
+    //day = new Date(day).toLocaleDateString('en-US');
+    //timeIn = new Date(`${day} ${timeIn}`).toLocaleTimeString('en-US');
+    //timeOut = new Date(`${day} ${timeOut}`).toLocaleTimeString('en-US');
+    //console.log(day, timeIn, timeOut); 
+    
+    //Verify Clock-Out time is greater than Clock-In time
+    if(timeOut <= timeIn) {
+        alert("Clock-In time must be older than Clock-Out time");
+        console.log("Invalid punch entry. ", "timeIn:", timeIn, "timeOut:", timeOut  );
+        return false;
+    }
+    
+    await fetchRequest(`${defaultURL}/punches`);
+    const punchArray = ObjToArray(timeCardObj);
+    
+    //Check if day exists and add day if it doesn't
+    if(!punchArray.find(punch => punch["day"] === day)) {
+        const cBody = { "day": day }
+        
+        const configSettings = {
+            method: "POST",
+            headers:
+            {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(cBody)
+        }
+        
+        const result = await fetchRequest(`${defaultURL}/days`, configSettings);
+        
+        if(result.status === 200 || result.status === 201) {
+            console.log(cBody)
+            console.log(`Time entry day [${day}] added`)
+        }
+        else {
+            alert(`An error occurred!`)
+            console.log(result);
+            return false;
+        }
+        return true;
+    }
+    
+    //Check if there's a more recent entry on the same day
+    if(punchArray.filter(punch => punch["day"] === day).find(punch => timeIn <= punch["timeOut"])) {
+        alert("Time entry cannot be older than any existing entries for the same day");
+        return false;
+    }
+    
+    return false;
 }
 
 //Generic Fetch request
