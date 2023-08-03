@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         
         submitPunch(cBody, `${cBody["timeIn"]} to ${cBody["timetimeOutIn"]}`)
         
-        console.log(punchTime);
+        console.log(cBody);
         
     });
     
@@ -96,7 +96,9 @@ async function refreshPunchHistory() {
             const cell3 = row1.insertCell();
             cell1.innerHTML = `${punch["timeIn"] ? punch["timeIn"]: ""}`;
             cell2.innerHTML = `${punch["timeOut"] ? punch["timeOut"]: ""}`;
-            
+            cell1.className = "td";
+            cell2.className = "td";
+
             //Add delete punch button
             const btnDeletePunch = document.createElement("button");
             btnDeletePunch.id = `btnDeletePunch_${dayId}_${punchId}`;
