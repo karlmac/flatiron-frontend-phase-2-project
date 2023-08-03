@@ -184,7 +184,7 @@ async function isValidTimeEntry(day, timeIn, timeOut) {
         console.log("Invalid Clock-Out time");
         return false;
     }
-
+    
     //console.log(day, timeIn, timeOut);
     //day = new Date(day).toLocaleDateString('en-US');
     //timeIn = new Date(`${day} ${timeIn}`).toLocaleTimeString('en-US');
@@ -201,8 +201,11 @@ async function isValidTimeEntry(day, timeIn, timeOut) {
     await fetchRequest(`${defaultURL}/punches`);
     const punchArray = ObjToArray(timeCardObj);
     
+    await fetchRequest(`${defaultURL}/punches`);
+    const dayArray = ObjToArray(timeCardObj);
+    
     //Check if day exists and add day if it doesn't
-    if(!punchArray.find(punch => punch["day"] === day)) {
+    if(!dayArray.find(days => days["day"] == day)) {
         const cBody = { "day": day }
         
         const configSettings = {
@@ -218,8 +221,8 @@ async function isValidTimeEntry(day, timeIn, timeOut) {
         const result = await fetchRequest(`${defaultURL}/days`, configSettings);
         
         if(result.status === 200 || result.status === 201) {
-            console.log(cBody)
-            console.log(`Time entry day [${day}] added`)
+            //console.log(cBody)
+            console.log(`New day created`, `[${day}]`)
         }
         else {
             alert(`An error occurred!`)
@@ -228,14 +231,15 @@ async function isValidTimeEntry(day, timeIn, timeOut) {
         }
         return true;
     }
-    
-    //Check if there's a more recent entry on the same day
-    if(punchArray.filter(punch => punch["day"] === day).find(punch => timeIn <= punch["timeOut"])) {
-        alert("Time entry cannot be older than any existing entries for the same day");
+
+    //Check if there's a more recent time entry on the same day
+    if(punchArray.filter(punch => punch["day"] === day)
+    .find(punch => new Date(`${day} ${timeIn}`).getTime() < new Date(`${day} ${punch["timeOut"]}`).getTime())) {
+        alert("Time entry cannot come before any existing entries on the same day");
         return false;
     }
     
-    return false;
+    return true;
 }
 
 //Generic Fetch request
