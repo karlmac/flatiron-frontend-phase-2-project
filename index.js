@@ -1,9 +1,6 @@
 //PENDING:
-//Add submit punch functionality (also submit to /days endpoint if selected day is not present) - cBtnSubmit=>submitPunch
 //Add clock API to get current date/time
-//Use find() method to find the last punch time - cLastPunchMsg
 
-const cLastPunchMsg = document.getElementById("lastPunchMsg");
 const cBtnSubmit = document.getElementById("btnSubmit");
 const cBtnShowHistory = document.getElementById("btnShowHistory");
 const cPunchHistory = document.getElementById("punchHistory");
@@ -14,9 +11,7 @@ cBtnShowHistory.textContent = "Show History";
 let showPunchHistoryDisplay = false;
 
 document.addEventListener("DOMContentLoaded", async () => {
-    //Get Last Punch info
-    cLastPunchMsg.textContent = `Last clocked ${"#in/out#"} at ${"#00:00 AM#"}`;
-    
+
     //Submit Punch
     cBtnSubmit.addEventListener("click", async () => {
         const cDay = document.getElementById("dayPunch");
