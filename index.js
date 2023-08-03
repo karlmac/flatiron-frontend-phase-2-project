@@ -78,7 +78,9 @@ async function refreshPunchHistory() {
         //console.log(punch);
         
         const rowHeader = tblElement.createTHead();
-        rowHeader.innerHTML = `<b>${day["day"]}</b>`;
+        rowHeader.innerHTML = `<b>${ new Date(`${day["day"].toString().replace('-','/')}`).toLocaleDateString('en-US')}</b>`;
+        // rowHeader.innerHTML = `<b>${ new Date(`${day["day"]}`).toDateString('en-US')}</b>`;
+        // rowHeader.innerHTML = `<b>${day["day"]}</b>`;
         
         const row0 = tblElement.insertRow();
         const cell0 = row0.insertCell();
@@ -118,26 +120,34 @@ async function refreshPunchHistory() {
 //Submit Punch
 async function submitPunch(cBody, punchInfo) {
     if(await isValidTimeEntry(cBody["day"], cBody["timeIn"], cBody["timeOut"])) {
-        if(confirm(`Are you sure you want to submit the punch from ${punchInfo}?`)) {        
-            const configSettings = {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
-                body: JSON.stringify(cBody)
-            };
-            
-            const result = await fetchRequest(`${defaultURL}/punches`);//, configSettings)
-            if(result.status === 200) {
-                alert(`Punch added successfully!`)
-                //refreshPunchHistory();
-            }
-            else {
-                alert(`An error occurred!`)
-                //console.log(result);
-            }
-        }        
+        if(confirm(`Are you sure you want to submit the punch from ${punchInfo}?`)) {
+            if (await addDay(cBody["day"])) {                
+                cBody["timeIn"] = new Date(`${cBody["day"]} ${cBody["timeIn"]}`).toLocaleTimeString('en-US');
+                cBody["timeOut"] = new Date(`${cBody["day"]} ${cBody["timeOut"]}`).toLocaleTimeString('en-US');
+                
+                const configSettings = {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify(cBody)
+                };
+                
+                const result = await fetchRequest(`${defaultURL}/punches`, configSettings)
+                if(result.status === 201) {
+                    alert(`Punch added successfully!`);
+                    
+                    if(!showPunchHistoryDisplay) {
+                        cBtnShowHistory.click();
+                    }
+                }
+                else {
+                    alert(`An error occurred!`)
+                    //console.log(result);
+                }
+            }        
+        }
     }
 }
 
@@ -185,12 +195,6 @@ async function isValidTimeEntry(day, timeIn, timeOut) {
         return false;
     }
     
-    //console.log(day, timeIn, timeOut);
-    //day = new Date(day).toLocaleDateString('en-US');
-    //timeIn = new Date(`${day} ${timeIn}`).toLocaleTimeString('en-US');
-    //timeOut = new Date(`${day} ${timeOut}`).toLocaleTimeString('en-US');
-    //console.log(day, timeIn, timeOut); 
-    
     //Verify Clock-Out time is greater than Clock-In time
     if(timeOut <= timeIn) {
         alert("Clock-In time must be older than Clock-Out time");
@@ -201,10 +205,22 @@ async function isValidTimeEntry(day, timeIn, timeOut) {
     await fetchRequest(`${defaultURL}/punches`);
     const punchArray = ObjToArray(timeCardObj);
     
+    //Check if there's a more recent time entry on the same day
+    if(punchArray.filter(punch => punch["day"] === day)
+    .find(punch => new Date(`${day} ${timeIn}`).getTime() < new Date(`${day} ${punch["timeOut"]}`).getTime())) {
+        alert("Time entry cannot come before any existing entries on the same day");
+        return false;
+    }
+    
+    return true;
+}
+
+//Check if day exists and add day if it doesn't
+async function addDay(day) {
+    
     await fetchRequest(`${defaultURL}/punches`);
     const dayArray = ObjToArray(timeCardObj);
     
-    //Check if day exists and add day if it doesn't
     if(!dayArray.find(days => days["day"] == day)) {
         const cBody = { "day": day }
         
@@ -220,8 +236,7 @@ async function isValidTimeEntry(day, timeIn, timeOut) {
         
         const result = await fetchRequest(`${defaultURL}/days`, configSettings);
         
-        if(result.status === 200 || result.status === 201) {
-            //console.log(cBody)
+        if(result.status === 201) {
             console.log(`New day created`, `[${day}]`)
         }
         else {
@@ -229,16 +244,7 @@ async function isValidTimeEntry(day, timeIn, timeOut) {
             console.log(result);
             return false;
         }
-        return true;
     }
-
-    //Check if there's a more recent time entry on the same day
-    if(punchArray.filter(punch => punch["day"] === day)
-    .find(punch => new Date(`${day} ${timeIn}`).getTime() < new Date(`${day} ${punch["timeOut"]}`).getTime())) {
-        alert("Time entry cannot come before any existing entries on the same day");
-        return false;
-    }
-    
     return true;
 }
 
