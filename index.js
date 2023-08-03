@@ -1,11 +1,9 @@
 //PENDING:
-//Add submit punch functionality (also submit to /days if selected day is not present) - cBtnSubmit=>submitPunch
+//Add submit punch functionality (also submit to /days endpoint if selected day is not present) - cBtnSubmit=>submitPunch
 //Add clock API to get current date/time
 //Use find() method to find the last punch time - cLastPunchMsg
 
-
 const cLastPunchMsg = document.getElementById("lastPunchMsg");
-const cTimePunch = document.getElementById("timePunch");
 const cBtnSubmit = document.getElementById("btnSubmit");
 const cBtnShowHistory = document.getElementById("btnShowHistory");
 const cPunchHistory = document.getElementById("punchHistory");
@@ -20,8 +18,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     cLastPunchMsg.textContent = `Last clocked ${"#in/out#"} at ${"#00:00 AM#"}`;
     
     //Submit Punch
-    cBtnSubmit.addEventListener("click", async () => { 
-        const punchTime = cTimePunch.value;
+    cBtnSubmit.addEventListener("click", async () => {
+        const cDay = document.getElementById("dayPunch");
+        const cTimePunchIn = document.getElementById("timePunchIn");
+        const cTimePunchOut = document.getElementById("timePunchOut");
+        
+        const timeIn = cTimePunchIn.value;
+        const timeOut = cTimePunchOut.value;
+        
+        const cBody = {
+            "day": cDay,
+            "timeIn" : timeIn,
+            "timeOut" : timeOut
+        };
+        
+        submitPunch(cBody, `${cBody["timeIn"]} to ${cBody["timetimeOutIn"]}`)
+        
         console.log(punchTime);
         
     });
@@ -42,6 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     
 });
 
+
 //Refresh punch history
 async function refreshPunchHistory() {
     
@@ -50,14 +63,15 @@ async function refreshPunchHistory() {
     await fetchRequest(`${defaultURL}/punches`);
     
     //Convert timeCard Object to Array
-    const punchArray = Object.keys(timeCardObj).map(element => timeCardObj[element]);
+    const punchArray = ObjToArray(timeCardObj);// Object.keys(timeCardObj).map(element => timeCardObj[element]);
     
     await fetchRequest(`${defaultURL}/days`);
-    const dayArray = Object.keys(timeCardObj).map(element => timeCardObj[element]);
+    const dayArray = ObjToArray(timeCardObj);
     
     //Day Loop
     dayArray.forEach(day => {
         const tblElement = document.createElement("table");
+        tblElement.className = "table";
         
         const dayId = day["id"];
         //console.log(punch);
@@ -99,28 +113,55 @@ async function refreshPunchHistory() {
 }
 
 //Submit Punch
-async function submitPunch(punchId, cBody, punchInfo) {        
+async function submitPunch(cBody, punchInfo) {        
     if(confirm(`Are you sure you want to submit the punch from ${punchInfo}?`)) {
-        const configSettings = {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: cBody ? JSON.stringify(cBody) : null
-        };
-        
-        const result = await fetchRequest(`${defaultURL}/punches`, configSettings)
-        if(result.status === 200) {
-            alert(`Punch added successfully!`)
-        }
-        else {
-            alert(`An error occurred!`)
-            //console.log(result);
+
+        if(isValidTimeEntry(cBody["day"], cBody["timeIn"], cBody["timeOut"],)) {
+            const configSettings = {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify(cBody)
+            };
+            
+            const result = await fetchRequest(`${defaultURL}/punches`);//, configSettings)
+            if(result.status === 200) {
+                alert(`Punch added successfully!`)
+            }
+            else {
+                alert(`An error occurred!`)
+                //console.log(result);
+            }
         }
         
         refreshPunchHistory();
     }
+}
+//Validate Punch data
+async function isValidTimeEntry(day, timeIn, timeOut) {
+    if(!day) {
+        alert("Please enter a day");
+        return false;
+    }
+    if(!timeIn) {
+        alert("Please enter Clock-In time");
+        return false;
+    }
+    if(!timeOut) {
+        alert("Please enter Clock-Out time");
+        return false;
+    }
+    
+    //Verify Clock-Out time is greater than Clock-In time
+    if(timeOut <= timeIn) {
+        alert("Clock-In time must be older than Clock-Out time");
+        return false;
+    }
+    
+    
+    return true;
 }
 
 //Delete Punch
@@ -128,7 +169,8 @@ async function deletePunch(punchId, cBody, punchInfo) {
     if(confirm(`Are you sure you want to delete the punch from ${punchInfo}?`)) {
         const configSettings = {
             method: 'DELETE',
-            headers: {
+            headers:
+            {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             },
@@ -162,4 +204,9 @@ async function fetchRequest(url, configSettings) {
         alert("Server Error!");
     });
     return result;
+}
+
+//Convert Object to Array
+function ObjToArray(obj){
+    return Object.keys(obj).map(element => obj[element]);
 }
