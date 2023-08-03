@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             "timeOut" : timeOut
         };
         
-        console.log(cBody);
+        //console.log(cBody);
         
         submitPunch(cBody, `${cBody["timeIn"]} to ${cBody["timeOut"]}`)
         
@@ -137,9 +137,12 @@ async function submitPunch(cBody, punchInfo) {
                 const result = await fetchRequest(`${defaultURL}/punches`, configSettings)
                 if(result.status === 201) {
                     alert(`Punch added successfully!`);
+                    console.log("Punch added", cBody);
                     
                     if(!showPunchHistoryDisplay) {
                         cBtnShowHistory.click();
+                    } else {
+                        refreshPunchHistory();
                     }
                 }
                 else {

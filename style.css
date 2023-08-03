@@ -8,16 +8,13 @@ body {
 .table {
   text-align: center;
   border: grey solid 1px;
-  padding: 1rem;
+  padding: 2px;
   /* width: 15rem; */
-  height: 10rem;
+  min-height: 12rem;
   display: inline-grid;
   /* box-shadow: 3px 4px #56345c; */
   overflow-x:auto;
   overflow-y:auto;
-}
-
-.tr{
 }
 
  .td {
@@ -65,10 +62,16 @@ button:hover {
   color: #e04b52;
 }
 
-
 input {
   border-radius: 5px;
   height: 2rem;
   font-size: 18px;
   margin: 3px;
+}
+
+input[type="date"]:hover
+,input[type="time"]:hover
+,input[type="datetime"]:hover {
+  color:blue;
+  cursor: pointer;
 }
