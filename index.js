@@ -182,6 +182,11 @@ async function isValidTimeEntry(day, timeIn, timeOut) {
         return true;
     }
     
+    //Check if there's a more recent entry on the same day
+    if(punchArray.filter(punch => punch["day"] === day).find(punch => timeIn <= punch["timeOut"])) {
+        alert("Time entry cannot be older than any existing entries for the same day");
+        return false;
+    }
     
     return true;
 }
