@@ -160,6 +160,28 @@ async function isValidTimeEntry(day, timeIn, timeOut) {
         return false;
     }
     
+    await fetchRequest(`${defaultURL}/punches`);
+    const punchArray = ObjToArray(timeCardObj);
+    
+    //Check if day exists and add day if it doesn't
+    if(punchArray.find(punch => punch["day"] !== day)) {
+        const cBody = { "day": day }
+        
+        const configSettings = {
+            method: "PUT",
+            header:
+            {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(cBody)
+        }
+        
+        await fetchRequest(`${defaultURL}/days`, configSettings);
+        
+        return true;
+    }
+    
     
     return true;
 }
