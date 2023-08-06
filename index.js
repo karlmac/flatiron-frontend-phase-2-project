@@ -1,4 +1,5 @@
 
+// Constants for DOM elements
 const cBtnSubmit = document.getElementById("btnSubmit");
 const cBtnShowHistory = document.getElementById("btnShowHistory");
 const cPunchHistory = document.getElementById("punchHistory");
@@ -9,6 +10,7 @@ let timeCardObj = {};
 cBtnShowHistory.textContent = "Show History";
 let showPunchHistoryDisplay = false;
 
+//Set up event listeners after document is loaded
 document.addEventListener("DOMContentLoaded", async () => {
     const cDay = document.getElementById("dayPunch");
     const cTimePunchIn = document.getElementById("timePunchIn");
@@ -16,25 +18,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     //Set action messages for day/time entry
     cDay.addEventListener("focus", async () => {
-        cActionMessage.textContent = `editing day...`;
+        showActionMessage(`editing day...`);
     });
-    cTimePunchIn.addEventListener("focus", async () => {
-        cActionMessage.textContent = `editing clock-in time...`;
-    });
-    cTimePunchOut.addEventListener("focus", async () => {
-        cActionMessage.textContent = `editing clock-out time...`;
-    });
-
-    cDay.addEventListener("focusout", async () => {
-        cActionMessage.textContent = `day set to [${cDay.value}]`;
-    });
-    cTimePunchIn.addEventListener("focusout", async () => {
-        cActionMessage.textContent = `clock-in time set to [${cTimePunchIn.value}]`;
-    });
-    cTimePunchOut.addEventListener("focusout", async () => {
-        cActionMessage.textContent = `clock-out time set to [${cTimePunchOut.value}]`;
-    });
+    cTimePunchIn.addEventListener("focus", () => showActionMessage("editing clock-in time..."));
+    cTimePunchOut.addEventListener("focus", () => showActionMessage("editing clock-out time..."));
     
+    cDay.addEventListener("focusout", () => showActionMessage(`day set to [${cDay.value}]`));
+    cTimePunchIn.addEventListener("focusout", () => showActionMessage(`clock-in time set to [${cTimePunchIn.value}]`));
+    cTimePunchOut.addEventListener("focusout", () => showActionMessage(`clock-out time set to [${cTimePunchOut.value}]`));   
     
     //Submit Punch
     cBtnSubmit.addEventListener("click", async () => {
@@ -68,11 +59,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     
 });
 
-
 //Refresh punch history
 async function refreshPunchHistory() {
     
-    cActionMessage.textContent = ``;
+    showActionMessage(``);
     
     cPunchHistory.textContent = "";
     await fetchRequest(`${defaultURL}/punches`);
@@ -81,7 +71,10 @@ async function refreshPunchHistory() {
     const punchArray = ObjToArray(timeCardObj);
     
     await fetchRequest(`${defaultURL}/days`);
-    const dayArray = ObjToArray(timeCardObj);
+    let dayArray = ObjToArray(timeCardObj);
+    
+    //Sort days from oldest to newest
+    dayArray.sort(compareDays);
     
     //Day Loop
     dayArray.forEach(day => {
@@ -89,12 +82,10 @@ async function refreshPunchHistory() {
         tblElement.className = "table";
         
         const dayId = day["id"];
-        //console.log(punch);
         
         const rowHeader = tblElement.createTHead();
         rowHeader.innerHTML = `<b>${ new Date(`${day["day"].toString().replace('-','/')}`).toLocaleDateString('en-US')}</b>`;
         // rowHeader.innerHTML = `<b>${ new Date(`${day["day"]}`).toDateString('en-US')}</b>`;
-        // rowHeader.innerHTML = `<b>${day["day"]}</b>`;
         
         const row0 = tblElement.insertRow();
         const cell0 = row0.insertCell();
@@ -103,7 +94,7 @@ async function refreshPunchHistory() {
         cell00.innerHTML = `<b>Clock-Out</b>`;
         
         //Punch Loop
-        //Filter punches for current day from [dayArray] 
+        //Filter punches for current day in [dayArray] 
         punchArray.filter(cDay => cDay["day"] === day["day"] )
         .forEach(punch => {
             const punchId = punch["id"];
@@ -120,7 +111,7 @@ async function refreshPunchHistory() {
             const btnDeletePunch = document.createElement("button");
             btnDeletePunch.id = `btnDeletePunch_${dayId}_${punchId}`;
             btnDeletePunch.textContent = `Delete`;
-            btnDeletePunch.addEventListener("click", () => deletePunch(punchId, null, `${cell1.textContent ? cell1.textContent: "\"undefined\""} to ${cell2.textContent? cell2.textContent: "\"undefined\""} on ${rowHeader.textContent}`));
+            btnDeletePunch.addEventListener("click", () => deletePunch(punchId, null, `${cell1.textContent ? cell1.textContent: "null"} to ${cell2.textContent? cell2.textContent: "null"} on ${rowHeader.textContent}`));
             cell3.append(btnDeletePunch);
             
             cPunchHistory.append(tblElement);
@@ -148,7 +139,7 @@ async function submitPunch(cBody, punchInfo) {
                 
                 const result = await fetchRequest(`${defaultURL}/punches`, configSettings)
                 if(result.status === 201) {
-                    //alert(`Punch added successfully!`);
+                    alert(`Punch added successfully!`);
                     console.log("Punch added", cBody);
                     
                     if(!showPunchHistoryDisplay) {
@@ -158,11 +149,10 @@ async function submitPunch(cBody, punchInfo) {
                     }
                     
                     //Set action message after punch submission
-                    cActionMessage.textContent = `punch submitted for ${cBody["day"]} from ${cBody["timeIn"]} to ${cBody["timeOut"]}`;
+                    showActionMessage(`punch submitted for ${cBody["day"]} from ${cBody["timeIn"]} to ${cBody["timeOut"]}`);
                 }
                 else {
                     alert(`An error occurred!`)
-                    //console.log(result);
                 }
             }        
         }
@@ -186,8 +176,9 @@ async function deletePunch(punchId, cBody, punchInfo) {
         if(result.status === 200) {
             alert(`Punch deleted!`)
             refreshPunchHistory();
+
             //Set action message after punch submission
-            cActionMessage.textContent = `time entry deleted [${punchInfo}]`;
+            showActionMessage(`time entry deleted [${punchInfo}]`);
         }
         else {
             alert(`An error occurred!`)
@@ -201,24 +192,24 @@ async function deletePunch(punchId, cBody, punchInfo) {
 async function isValidTimeEntry(day, timeIn, timeOut) {
     if(!day) {
         alert("Please enter a day");
-        console.log("Invalid day");
+        showActionMessage("Invalid day");
         return false;
     }
     if(!timeIn) {
         alert("Please enter Clock-In time");
-        console.log("Invalid Clock-In time");
+        showActionMessage("Invalid Clock-In time");
         return false;
     }
     if(!timeOut) {
         alert("Please enter Clock-Out time");
-        console.log("Invalid Clock-Out time");
+        showActionMessage("Invalid Clock-Out time");
         return false;
     }
     
     //Verify Clock-Out time is greater than Clock-In time
     if(timeOut <= timeIn) {
         alert("Clock-In time must be earlier than Clock-Out time");
-        console.log("Invalid punch entry. ", "timeIn:", timeIn, "timeOut:", timeOut  );
+        showActionMessage("Invalid punch entry. ", "timeIn:", timeIn, "timeOut:", timeOut  );
         return false;
     }
     
@@ -268,6 +259,16 @@ async function addDay(day) {
     return true;
 }
 
+//Day comparison function for sorting
+function compareDays(day1Array, day2Array) {
+    if (day1Array["day"] < day2Array["day"])
+    return -1;
+    else if (day1Array["day"] === day2Array["day"])
+    return 0;
+    else if (day1Array["day"] > day2Array["day"])
+    return 1;
+};
+
 //Generic Fetch request
 async function fetchRequest(url, configSettings) {
     let result;
@@ -282,6 +283,11 @@ async function fetchRequest(url, configSettings) {
         alert("Server Error!");
     });
     return result;
+}
+
+// Function to show action messages
+function showActionMessage(message) {
+    cActionMessage.textContent = message;
 }
 
 //Convert Object to Array
