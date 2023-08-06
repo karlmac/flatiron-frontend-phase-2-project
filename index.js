@@ -1,9 +1,8 @@
-//PENDING:
-//Add clock API to get current date/time
 
 const cBtnSubmit = document.getElementById("btnSubmit");
 const cBtnShowHistory = document.getElementById("btnShowHistory");
 const cPunchHistory = document.getElementById("punchHistory");
+const cActionMessage = document.getElementById("actionMessage");
 const defaultURL = 'http://localhost:3000/timeCard';
 let timeCardObj = {};
 
@@ -11,12 +10,34 @@ cBtnShowHistory.textContent = "Show History";
 let showPunchHistoryDisplay = false;
 
 document.addEventListener("DOMContentLoaded", async () => {
+    const cDay = document.getElementById("dayPunch");
+    const cTimePunchIn = document.getElementById("timePunchIn");
+    const cTimePunchOut = document.getElementById("timePunchOut");
+    
+    //Set action messages for day/time entry
+    cDay.addEventListener("focus", async () => {
+        cActionMessage.textContent = `editing day...`;
+    });
+    cTimePunchIn.addEventListener("focus", async () => {
+        cActionMessage.textContent = `editing clock-in time...`;
+    });
+    cTimePunchOut.addEventListener("focus", async () => {
+        cActionMessage.textContent = `editing clock-out time...`;
+    });
 
+    cDay.addEventListener("focusout", async () => {
+        cActionMessage.textContent = `day set to [${cDay.value}]`;
+    });
+    cTimePunchIn.addEventListener("focusout", async () => {
+        cActionMessage.textContent = `clock-in time set to [${cTimePunchIn.value}]`;
+    });
+    cTimePunchOut.addEventListener("focusout", async () => {
+        cActionMessage.textContent = `clock-out time set to [${cTimePunchOut.value}]`;
+    });
+    
+    
     //Submit Punch
     cBtnSubmit.addEventListener("click", async () => {
-        const cDay = document.getElementById("dayPunch");
-        const cTimePunchIn = document.getElementById("timePunchIn");
-        const cTimePunchOut = document.getElementById("timePunchOut");
         
         const punchDay = cDay.value;
         const timeIn = cTimePunchIn.value;
@@ -28,10 +49,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             "timeOut" : timeOut
         };
         
-        //console.log(cBody);
-        
-        submitPunch(cBody, `${cBody["timeIn"]} to ${cBody["timeOut"]}`)
-        
+        submitPunch(cBody, `${cBody["timeIn"]} to ${cBody["timeOut"]}`);        
     });
     
     //Show Punch history
@@ -54,12 +72,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 //Refresh punch history
 async function refreshPunchHistory() {
     
-    cPunchHistory.textContent = "";
+    cActionMessage.textContent = ``;
     
+    cPunchHistory.textContent = "";
     await fetchRequest(`${defaultURL}/punches`);
     
     //Convert timeCard Object to Array
-    const punchArray = ObjToArray(timeCardObj);// Object.keys(timeCardObj).map(element => timeCardObj[element]);
+    const punchArray = ObjToArray(timeCardObj);
     
     await fetchRequest(`${defaultURL}/days`);
     const dayArray = ObjToArray(timeCardObj);
@@ -108,8 +127,6 @@ async function refreshPunchHistory() {
         });
         
     });
-    
-    //console.log(timeCardObj);
 }
 
 //Submit Punch
@@ -131,7 +148,7 @@ async function submitPunch(cBody, punchInfo) {
                 
                 const result = await fetchRequest(`${defaultURL}/punches`, configSettings)
                 if(result.status === 201) {
-                    alert(`Punch added successfully!`);
+                    //alert(`Punch added successfully!`);
                     console.log("Punch added", cBody);
                     
                     if(!showPunchHistoryDisplay) {
@@ -139,6 +156,9 @@ async function submitPunch(cBody, punchInfo) {
                     } else {
                         refreshPunchHistory();
                     }
+                    
+                    //Set action message after punch submission
+                    cActionMessage.textContent = `punch submitted for ${cBody["day"]} from ${cBody["timeIn"]} to ${cBody["timeOut"]}`;
                 }
                 else {
                     alert(`An error occurred!`)
@@ -165,13 +185,15 @@ async function deletePunch(punchId, cBody, punchInfo) {
         const result = await fetchRequest(`${defaultURL}/punches/${punchId}`, configSettings)
         if(result.status === 200) {
             alert(`Punch deleted!`)
+            refreshPunchHistory();
+            //Set action message after punch submission
+            cActionMessage.textContent = `time entry deleted [${punchInfo}]`;
         }
         else {
             alert(`An error occurred!`)
             //console.log(result);
         }
         
-        refreshPunchHistory();
     }
 }
 
@@ -195,7 +217,7 @@ async function isValidTimeEntry(day, timeIn, timeOut) {
     
     //Verify Clock-Out time is greater than Clock-In time
     if(timeOut <= timeIn) {
-        alert("Clock-In time must be older than Clock-Out time");
+        alert("Clock-In time must be earlier than Clock-Out time");
         console.log("Invalid punch entry. ", "timeIn:", timeIn, "timeOut:", timeOut  );
         return false;
     }
