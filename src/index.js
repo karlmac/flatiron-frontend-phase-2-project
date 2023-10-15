@@ -25,9 +25,7 @@ class TimeCardApp extends Component {
 
   }
 
-
   componentDidMount() {
-    
     this.cBtnSubmit = document.getElementById("btnSubmit");
     this.cBtnShowHistory = document.getElementById("btnShowHistory");
     this.cPunchHistory = document.getElementById("punchHistory");
@@ -210,7 +208,6 @@ refreshPunchHistory = async () => {
       
       const rowHeader = tblElement.createTHead();
       rowHeader.innerHTML = `<b>${ new Date(`${day["day"].toString().replace('-','/')}`).toLocaleDateString('en-US')}</b>`;
-      // rowHeader.innerHTML = `<b>${ new Date(`${day["day"]}`).toDateString('en-US')}</b>`;
       
       const row0 = tblElement.insertRow();
       const cell0 = row0.insertCell();
@@ -351,11 +348,6 @@ ObjToArray = (obj) => {
   return Object.keys(obj).map(element => obj[element]);
 }
 
-
-//Convert Object to Array
-ObjToArray = (obj) => {
-  return Object.keys(obj).map(element => obj[element]);
-}
 
   render() {
     const { day, timeIn, timeOut, punchHistory, showPunchHistory, actionMessage } = this.state;
