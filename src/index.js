@@ -143,13 +143,13 @@ deletePunch = async (punchId, cBody, punchInfo) => {
           body: cBody ? JSON.stringify(cBody) : null
       };
       
-      const result = await fetchRequest(`${this.defaultURL}/punches/${punchId}`, configSettings)
+      const result = await this.fetchRequest(`${this.defaultURL}/punches/${punchId}`, configSettings)
       if(result.status === 200) {
           alert(`Punch deleted!`)
           this.refreshPunchHistory();
 
           //Set action message after punch submission
-          this.ObjToArrayshowActionMessage(`time entry deleted [${punchInfo}]`);
+          this.showActionMessage(`time entry deleted [${punchInfo}]`);
       }
       else {
           alert(`An error occurred!`)
@@ -245,7 +245,6 @@ refreshPunchHistory = async () => {
   });
 }
 
-
   //Generic Fetch request
   fetchRequest = async (url, configSettings) => {
   let result;
@@ -283,12 +282,12 @@ refreshPunchHistory = async () => {
   //Verify Clock-Out time is greater than Clock-In time
   if(timeOut <= timeIn) {
       alert("Clock-In time must be earlier than Clock-Out time");
-      showActionMessage("Invalid punch entry. ", "timeIn:", timeIn, "timeOut:", timeOut  );
+      this.showActionMessage("Invalid punch entry. ", "timeIn:", timeIn, "timeOut:", timeOut  );
       return false;
   }
   
-  await fetchRequest(`${this.defaultURL}/punches`);
-  const punchArray = ObjToArray(this.timeCardObj);
+  await this.fetchRequest(`${this.defaultURL}/punches`);
+  const punchArray = this.ObjToArray(this.timeCardObj);
   
   //Check if there's a more recent time entry on the same day
   if(punchArray.filter(punch => punch["day"] === day)
@@ -313,8 +312,8 @@ compareDays = (day1Array, day2Array) => {
 //Check if day exists and add day if it doesn't
 addDay = async (day) => {
     
-  await fetchRequest(`${this.defaultURL}/punches`);
-  const dayArray = ObjToArray(this.timeCardObj);
+  await this.fetchRequest(`${this.defaultURL}/punches`);
+  const dayArray = this.ObjToArray(this.timeCardObj);
   
   if(!dayArray.find(days => days["day"] == day)) {
       const cBody = { "day": day }
@@ -329,7 +328,7 @@ addDay = async (day) => {
           body: JSON.stringify(cBody)
       }
       
-      const result = await fetchRequest(`${this.defaultURL}/days`, configSettings);
+      const result = await this.fetchRequest(`${this.defaultURL}/days`, configSettings);
       
       if(result.status === 201) {
           console.log(`New day created`, `[${day}]`)
@@ -347,6 +346,12 @@ addDay = async (day) => {
 showActionMessage = (message) => {
   this.cActionMessage.textContent = message;
 }
+//Convert Object to Array
+ObjToArray = (obj) => {
+  return Object.keys(obj).map(element => obj[element]);
+}
+
+
 //Convert Object to Array
 ObjToArray = (obj) => {
   return Object.keys(obj).map(element => obj[element]);
