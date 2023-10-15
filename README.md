@@ -1,6 +1,6 @@
 # My Time Card Tracker
 
-My Time Card Tracker is a simple JavaScript based application that allows users to track their working hours by clocking in and out. The application uses a local JSON database with JSON Server to store and retrieve user time card data.
+My Time Card Tracker is a simple React application that allows users to track their working hours by clocking in and out. The application uses a local JSON database with JSON Server to store and retrieve user time card data.
 
 ## Features
 
@@ -75,6 +75,7 @@ To restore the sample data in the _db.json_ file after it has been modified, you
 * HTML
 * CSS
 * JavaScript
+* React
 * JSON Server (local JSON database)
 
 ## Disclaimer
