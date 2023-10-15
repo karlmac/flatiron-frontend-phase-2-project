@@ -193,10 +193,10 @@ refreshPunchHistory = async () => {
   await this.fetchRequest(`${this.defaultURL}/punches`);
   
   //Convert timeCard Object to Array
-  const punchArray = this.ObjToArray(timeCardObj);
+  const punchArray = this.ObjToArray(this.timeCardObj);
   
   await this.fetchRequest(`${this.defaultURL}/days`);
-  let dayArray = this.ObjToArray(timeCardObj);
+  let dayArray = this.ObjToArray(this.timeCardObj);
   
   //Sort days from oldest to newest
   dayArray.sort(this.compareDays);
