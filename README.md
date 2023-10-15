@@ -12,6 +12,10 @@ My Time Card Tracker is a simple React application that allows users to track th
 To use this Timecard Tracker App:
 1. Clone or download this repository to your local machine.
 1. Navigate to the root folder of the project.
+1. Launch the application locally with the following command:
+```bash
+npm run dev
+```
 1. Open the index.html file in your web browser.
 1. Launch the JSON Server with the following command:
 ```bash
